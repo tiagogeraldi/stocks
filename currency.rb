@@ -25,7 +25,7 @@ load 'configuration.rb'
 
 config = Configuration.new({})
 
-fiducial = config.currencies.flatten.each { |i| i.split('/') }.uniq
+fiducial = config.currencies_list.map { |i| i.split('/') }.flatten.uniq
 
 def print_big(text, color)
   font = 'big' # big, block or slant
@@ -46,7 +46,7 @@ Thread.new do
   end
 end
 
-rows = config.cryptos + config.currencies
+rows = config.cryptos_list + config.currencies_list
 
 initial_values = rows.map do |row|
   [row, 0.0 ]
@@ -57,28 +57,24 @@ result = {}
 # Main loop to fetch and display data every 10 seconds
 loop do
   # Fetch data from CoinGecko API
-  puts config.cryptos
-  puts fiducial
-  uri = URI.parse("https://api.coingecko.com/api/v3/simple/price?ids=#{config.cryptos.join(',')}&vs_currencies=#{fiducial.join(',')}")
+  uri = URI.parse("https://api.coingecko.com/api/v3/simple/price?ids=#{config.cryptos_list.join(',')}&vs_currencies=#{fiducial.join(',')}")
   response = Net::HTTP.get_response(uri)
 
   if response.is_a?(Net::HTTPSuccess)
     data = JSON.parse(response.body)
-    puts data
     crypto_values = {}
 
-    config.cryptos.each do |row|
+    config.cryptos_list.each do |row|
       if data[row]
         crypto_values[row] = data[row]
-        result[row] = crypto_values[row]['usd'].to_i
+        result[row] = number_with_delimiter(crypto_values[row]['usd'].to_i)
       end
     end
 
-    puts config.currencies
-    config.currencies.each do |map|
+    config.currencies_list.each do |map|
       from, to = map.split('/')
       rate = crypto_values.values.first[to].to_f / crypto_values.values.first[from].to_f
-      result["#{from}/#{to}"] = rate.round(2)
+      result["#{from}/#{to}"] = number_with_delimiter(rate.round(2))
     end
   end
 
@@ -97,8 +93,8 @@ loop do
     result.each do |key, value|
       puts key.upcase
       puts "\r"
-      color = value >= initial_values[key] ? :green : :red
-      print_big number_with_delimiter(value.to_f), color
+      color = value.to_f >= initial_values[key] ? :green : :red
+      print_big value, color
       puts "\r"
     end
   end
