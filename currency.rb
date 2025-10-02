@@ -11,7 +11,7 @@
 # - display_mode as command argument and crypto / stocks
 # - Encapsulate in a binary
 # - Add tests
-# - Add rubocop
+# - Kill with CTRL + C
 
 
 require 'net/http'
@@ -20,6 +20,9 @@ require 'json'
 require 'io/console'
 require 'ruby_figlet'
 require 'colorize'
+require 'terminal-table'
+
+display_mode = 'table'
 
 # see https://api.coingecko.com/api/v3/coins/list'
 cryptos = ['bitcoin', 'ethereum', 'solana'] # load from config file
@@ -36,11 +39,6 @@ end
 
 def number_with_delimiter(number)
   number.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\1,')
-end
-
-trap('INT') do
-  "\n#{puts('Exiting due to Ctrl+C...')}"
-  exit
 end
 
 # Thread to listen for 'q' or 'Q' to quit
@@ -68,7 +66,6 @@ loop do
   if response.is_a?(Net::HTTPSuccess)
     data = JSON.parse(response.body)
     crypto_values = {}
-    puts data
 
     cryptos.each do |row|
       if data[row]
@@ -85,14 +82,26 @@ loop do
 
   print "\e[2J\e[H"
 
-  result.each do |key, value|
-    puts key.upcase
-    puts "\r"
-    color = value >= initial_values[key] ? :green : :red
-    print_big number_with_delimiter(value.to_f), color
-    puts "\r"
-    puts "\r"
+  if display_mode == 'table'
+    table = Terminal::Table.new(
+      title: 'Stocks',  # Optional: Adds a title above the table
+      headings: ['Item', 'Value'],
+      rows: result.to_a,
+      style: { width: 50 }
+    )
+    table.align_column(1, :right)
+    puts table.to_s.lines.map(&:rstrip).join("\r\n")
+  else
+    result.each do |key, value|
+      puts key.upcase
+      puts "\r"
+      color = value >= initial_values[key] ? :green : :red
+      print_big number_with_delimiter(value.to_f), color
+      puts "\r"
+    end
   end
+
+  puts "\r"
 
   # Refresh rate
   sleep 60
