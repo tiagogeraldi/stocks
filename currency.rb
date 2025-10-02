@@ -21,14 +21,11 @@ require 'io/console'
 require 'ruby_figlet'
 require 'colorize'
 require 'terminal-table'
+load 'configuration.rb'
 
-display_mode = 'table'
+config = Configuration.new({})
 
-# see https://api.coingecko.com/api/v3/coins/list'
-cryptos = ['bitcoin', 'ethereum', 'solana'] # load from config file
-conversion_map = [%w[usd brl], %w[eur usd]] # load from config file
-
-fiducial = conversion_map.flatten.uniq
+fiducial = config.currencies.flatten.each { |i| i.split('/') }.uniq
 
 def print_big(text, color)
   font = 'big' # big, block or slant
@@ -49,7 +46,7 @@ Thread.new do
   end
 end
 
-rows = cryptos + conversion_map.map { |pair| pair.join('/') }
+rows = config.cryptos + config.currencies
 
 initial_values = rows.map do |row|
   [row, 0.0 ]
@@ -60,21 +57,26 @@ result = {}
 # Main loop to fetch and display data every 10 seconds
 loop do
   # Fetch data from CoinGecko API
-  uri = URI.parse("https://api.coingecko.com/api/v3/simple/price?ids=#{cryptos.join(',')}&vs_currencies=#{fiducial.join(',')}")
+  puts config.cryptos
+  puts fiducial
+  uri = URI.parse("https://api.coingecko.com/api/v3/simple/price?ids=#{config.cryptos.join(',')}&vs_currencies=#{fiducial.join(',')}")
   response = Net::HTTP.get_response(uri)
 
   if response.is_a?(Net::HTTPSuccess)
     data = JSON.parse(response.body)
+    puts data
     crypto_values = {}
 
-    cryptos.each do |row|
+    config.cryptos.each do |row|
       if data[row]
         crypto_values[row] = data[row]
         result[row] = crypto_values[row]['usd'].to_i
       end
     end
 
-    conversion_map.to_h.each do |from, to|
+    puts config.currencies
+    config.currencies.each do |map|
+      from, to = map.split('/')
       rate = crypto_values.values.first[to].to_f / crypto_values.values.first[from].to_f
       result["#{from}/#{to}"] = rate.round(2)
     end
@@ -82,7 +84,7 @@ loop do
 
   print "\e[2J\e[H"
 
-  if display_mode == 'table'
+  if config.display_mode == 'table'
     table = Terminal::Table.new(
       title: 'Stocks',  # Optional: Adds a title above the table
       headings: ['Item', 'Value'],
