@@ -38,7 +38,7 @@ end
 
 
 CLI::UI::StdoutRouter.enable
-
+CLI::UI.frame_style = :bracket
 config = Configuration.new({})
 
 fiducial = config.currencies_list.map { |i| i.split('/') }.flatten.uniq
