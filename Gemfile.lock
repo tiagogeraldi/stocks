@@ -1,26 +1,14 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    colorize (1.1.0)
+    cli-ui (2.4.0)
     json (2.15.0)
-    pastel (0.8.0)
-      tty-color (~> 0.5)
-    ruby_figlet (0.6.1)
-    terminal-table (4.0.0)
-      unicode-display_width (>= 1.1.1, < 4)
-    tty-color (0.6.0)
     tty-cursor (0.7.1)
-    tty-prompt (0.23.1)
-      pastel (~> 0.8)
-      tty-reader (~> 0.8)
     tty-reader (0.9.0)
       tty-cursor (~> 0.7)
       tty-screen (~> 0.8)
       wisper (~> 2.0)
     tty-screen (0.8.2)
-    unicode-display_width (3.2.0)
-      unicode-emoji (~> 4.1)
-    unicode-emoji (4.1.0)
     wisper (2.0.1)
 
 PLATFORMS
@@ -28,11 +16,9 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  colorize
+  cli-ui
   json
-  ruby_figlet
-  terminal-table
-  tty-prompt
+  tty-reader
 
 RUBY VERSION
    ruby 3.4.4p34

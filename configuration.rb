@@ -1,6 +1,5 @@
 class Configuration
-
-  attr_reader :display_mode, :cryptos_list, :currencies_list, :stocks_list,
+  attr_reader :cryptos_list, :currencies_list, :stocks_list,
               :crypto_only, :stocks_only, :currency_only, :config_file
 
   def initialize(args)
@@ -28,6 +27,7 @@ private
     data = text.scan(/(\w+)\s*=\s*"?([^"\n]+)"?/)
 
     Hash[data].merge(@args).each do |key, value|
+      # TODO remove # comments in the end of a line
       parsed_value = key.include?('_list') ? value.split(',') : value
       instance_variable_set("@#{key}", parsed_value)
     end
