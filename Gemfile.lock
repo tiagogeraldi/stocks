@@ -1,7 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    cli-ui (2.4.0)
+    curses (1.4.7)
+    hawktui (1.0.0)
+      curses (~> 1.4.7)
     json (2.15.0)
     tty-cursor (0.7.1)
     tty-reader (0.9.0)
@@ -16,7 +18,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  cli-ui
+  hawktui
   json
   tty-reader
 
