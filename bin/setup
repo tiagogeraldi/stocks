@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
-set -euo pipefail
-IFS=$'\n\t'
-set -vx
 
 bundle install
+
+echo 'Creating config file...'
+
+CONFIG_DIR="$HOME/.config/stocks"
+CONFIG_FILE="$CONFIG_DIR/stocks.conf"
+
+mkdir -p "$CONFIG_DIR"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    cp stocks.conf "$CONFIG_FILE"
+fi
+
+echo 'Done!'
+
+echo "Edit $CONFIG_FILE to choose your stocks and currencies"
+echo 'Run bin/run to start'
