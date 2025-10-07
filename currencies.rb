@@ -8,6 +8,9 @@ class Currencies
 
     if response.is_a?(Net::HTTPSuccess)
       return JSON.parse(response.body)
+    else
+      puts response.body
+      return nil
     end
   end
 end

@@ -2,3 +2,19 @@
 
 require "bundler/setup"
 load 'app.rb'
+
+# Run the monitor
+if __FILE__ == $PROGRAM_NAME
+  begin
+    config = Configuration.new({})
+    monitor = FinancialMonitor.new(config)
+    monitor.run
+  rescue Interrupt
+    # Handle Ctrl+C gracefully
+    puts "\nExiting..."
+  rescue => e
+    puts "Error: #{e.message}"
+    puts e.backtrace
+    exit 1
+  end
+end
