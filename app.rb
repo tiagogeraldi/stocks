@@ -19,10 +19,9 @@ require 'json'
 require 'curses'
 require 'hawktui/streaming_table'
 load 'configuration.rb'
+load 'currencies.rb'
 
 config = Configuration.new({})
-
-fiducial = config.currencies_list.map { |i| i.split('/') }.flatten.uniq
 
 def number_with_delimiter(number)
   number.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\1,')
@@ -49,29 +48,23 @@ Thread.new do
 
     # Clear previous rows
     table.instance_variable_set(:@rows, [])
+    data = Currencies.load(config)
 
-    # Fetch data from CoinGecko API
-    uri = URI.parse("https://api.coingecko.com/api/v3/simple/price?ids=#{config.cryptos_list.join(',')}&vs_currencies=#{fiducial.join(',')}")
-    response = Net::HTTP.get_response(uri)
+    crypto_values = {}
 
-    if response.is_a?(Net::HTTPSuccess)
-      data = JSON.parse(response.body)
-      crypto_values = {}
-
-      config.cryptos_list.each do |row|
-        if data[row]
-          crypto_values[row] = data[row]
-          table.add_row('Asset' => row.capitalize, 'Value' => number_with_delimiter(crypto_values[row]['usd'].to_i).rjust(20))
-        end
+    config.cryptos_list.each do |row|
+      if data[row]
+        crypto_values[row] = data[row]
+        table.add_row('Asset' => row.capitalize, 'Value' => number_with_delimiter(crypto_values[row]['usd'].to_i).rjust(20))
       end
+    end
 
-      config.currencies_list.each do |map|
-        from, to = map.split('/')
-        first_crypto = crypto_values.values.first
-        if first_crypto
-          rate = first_crypto[to].to_f / first_crypto[from].to_f
-          table.add_row('Asset' => "#{from.upcase}/#{to.upcase}", 'Value' => number_with_delimiter(rate.round(2)).rjust(20))
-        end
+    config.currencies_list.each do |map|
+      from, to = map.split('/')
+      first_crypto = crypto_values.values.first
+      if first_crypto
+        rate = first_crypto[to].to_f / first_crypto[from].to_f
+        table.add_row('Asset' => "#{from.upcase}/#{to.upcase}", 'Value' => number_with_delimiter(rate.round(2)).rjust(20))
       end
     end
 
